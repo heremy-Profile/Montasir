@@ -1,248 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curriculum Vitae - Montasir Abdalgadi</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Roboto', sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-        .container {
-            max-width: 900px;
-            margin: 50px auto;
-            background: #1a1a1a;
-            padding: 30px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            border-radius: 10px;
-        }
-        .header, .section {
-            margin-bottom: 20px;
-        }
-        .header {
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 2.5em;
-            margin: 10px 0;
-            color: #ffcc00;
-        }
-        .header h2 {
-            font-size: 1.5em;
-            color: #666;
-        }
-        .contact-info {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 10px;
-        }
-        .contact-info div {
-            margin: 0 10px;
-            font-size: 1.1em;
-            background: #1a1a1a;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .contact-info div:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 30px rgba(0,0,0,1);
-        }
-        .contact-info i {
-            margin-right: 5px;
-            color: #ffcc00;
-        }
-        .section h3 {
-            border-bottom: 2px solid #ffcc00;
-            padding-bottom: 5px;
-            margin-bottom: 15px;
-            color: #ffcc00;
-        }
-        .skills, .experience, .education, .certifications, .languages, .personal-attributes {
-            margin-bottom: 20px;
-        }
-        .skills ul, .experience ul, .education ul, .certifications ul, .languages ul, .personal-attributes ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .skills li, .experience li, .education li, .certifications li, .languages li, .personal-attributes li {
-            margin-bottom: 10px;
-            background: #1a1a1a;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.8);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .skills li:hover, .experience li:hover, .education li:hover, .certifications li:hover, .languages li:hover, .personal-attributes li:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 0 30px rgba(0,0,0,1);
-        }
-        .skills li:before, .experience li:before, .education li:before, .certifications li:before, .languages li:before, .personal-attributes li:before {
-            content: "\2022";
-            color: #ffcc00;
-            font-weight: bold;
-            display: inline-block;
-            width: 1em;
-            margin-left: -1em;
-        }
-        .experience .job {
-            margin-bottom: 15px;
-        }
-        .experience .job h4 {
-            margin-bottom: 5px;
-            color: #ffcc00;
-        }
-        .experience .job h5 {
-            font-size: 1.1em;
-            margin-bottom: 5px;
-            color: #666;
-        }
-        .languages .badge, .personal-attributes .badge {
-            background-color: #ffcc00;
-            color: #111;
-            font-size: 0.9em;
-            margin-right: 5px;
-        }
-        footer {
-            background: rgba(0, 0, 0, 0.8);
-            color: #e0e0e0;
-            text-align: center;
-            padding: 30px 0;
-            box-shadow: 0 -5px 10px rgba(0,0,0,0.8);
-        }
-        footer a {
-            color: #ffcc00;
-            text-decoration: none;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-        .profile-image {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .profile-image img {
-            border-radius: 50%;
-            width: 150px;
-            height: 150px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.6);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ain Al Khaleej University enterprise Student Information System with admissions, student, faculty, finance, CMS, reporting, security, audit, and bilingual Arabic/English support.">
+  <title>Ain Al Khaleej University Enterprise SIS</title>
+  <link rel="stylesheet" href="assets/sis.css">
+  <script type="module" src="assets/sis.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Montasir Abdalgadir Abdalrahim Osman</h1>
-            <h2>Apps & Database Administrator</h2>
-            <div class="contact-info">
-                <div><i class="fas fa-envelope"></i> montasirabdalgadi@gmail.com</div>
-                <div><i class="fas fa-phone"></i> +971504106824</div>
-                <div><i class="fas fa-map-marker-alt"></i> Ain, Abu Dhabi, UAE</div>
-            </div>
-        </div>
+  <div class="topbar">
+    <span>Enterprise SIS starter • secure, bilingual, audit-ready</span>
+    <span><a href="montasir.html">Preserved existing CV page</a></span>
+  </div>
 
-        <div class="profile-image">
-            <img src="Picture1.png" alt="Montasir Abdalgadi">
-        </div>
+  <header class="shell-header">
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="brand" href="#home" aria-label="Ain Al Khaleej University home">
+        <span class="brand-mark">AKH</span>
+        <span>
+          <strong id="cms-home-title">Ain Al Khaleej University</strong>
+          <span data-i18n="platform">Enterprise SIS</span>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="#programs">Programs</a>
+        <a href="#apply">Admissions</a>
+        <a href="#portal">Portals</a>
+        <a href="#security">Security</a>
+        <a href="#docs">Docs</a>
+      </div>
+      <div class="nav-actions">
+        <button id="language-toggle" class="button secondary" type="button">English / العربية</button>
+        <a class="button gold" href="#apply" data-i18n="apply">Apply now</a>
+      </div>
+    </nav>
+  </header>
 
-        <div class="section">
-            <h3>Professional Summary</h3>
-            <p>A seasoned and Oracle Certified Database Administrator with a robust 9-year tenure across various database technologies and industries. My expertise spans Oracle, PostgreSQL, MS SQL Server, and more, with certifications including OCA, OCP, and official PostgreSQL course credentials. Proficient in orchestrating the installation, administration, and troubleshooting of complex database systems on multiple platforms (Ubuntu, Windows, Linux), I am dedicated to elevating IT infrastructure with resilient and forward-thinking database solutions.</p>
+  <main id="home">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Ain Al Khaleej University</p>
+        <h1>Premium enterprise student information system for real university operations.</h1>
+        <p id="cms-home-body">A premium bilingual university platform for admissions, academics, finance, and student success.</p>
+        <div class="hero-actions">
+          <a class="button gold" href="#apply" data-i18n="apply">Apply now</a>
+          <a class="button secondary" href="#portal" data-i18n="portal">Open portal</a>
         </div>
+      </div>
+      <aside class="hero-card" aria-label="SIS highlights">
+        <div class="metric"><strong>23</strong><span>Default roles with permission-based access</span></div>
+        <div class="metric"><strong>80+</strong><span>Enterprise modules, tables, workflows, and docs covered</span></div>
+        <div class="metric"><strong>AR/EN</strong><span>RTL-ready Arabic and English CMS data</span></div>
+      </aside>
+    </section>
 
-        <div class="section skills">
-            <h3>Technical Skills</h3>
-            <ul>
-                <li><strong>Databases:</strong> Oracle (9i, 10g, 11g, 12c), MS SQL Server, PostgreSQL, Sybase ASE</li>
-                <li><strong>Platforms:</strong> Solaris, Oracle Enterprise Linux, Red Hat Linux, Windows Server, VMware</li>
-                <li><strong>Tools:</strong> Oracle RAC, Oracle Data Guard, ASM, Clusterware, SQL*Plus, SQL Developer, PGADMIN, SSMS, SSIS, Apache HTTP Server, IIS</li>
-                <li><strong>Infrastructure:</strong> SAN Storage, Data Centers, Active Directory, DHCP, DNS, VMware, Hyper-V</li>
-            </ul>
-        </div>
+    <section class="section" id="programs">
+      <div class="section-title">
+        <p class="eyebrow">Academic core</p>
+        <h2>Programs connected to admissions, registration, finance, and reporting.</h2>
+        <p>Program data is loaded from the same service layer used by the portal, giving the public website a CMS/SIS integration path.</p>
+      </div>
+      <div id="program-list" class="grid three"></div>
+    </section>
 
-        <div class="section experience">
-            <h3>Professional Experience</h3>
-            <div class="job">
-                <h4>Senior Database Administrator, Ain Al Khaleej Hospital</h4>
-                <h5>Aug 2021 - Present</h5>
-            </div>
-            <div class="job">
-                <h4>Freelance Senior Database Administrator and IT Equipment Purchaser</h4>
-                <h5>Feb 2020 – Aug 2021</h5>
-            </div>
-            <div class="job">
-                <h4>Senior Database Administrator, GSK IT</h4>
-                <h5>May 2018 – Aug 2019</h5>
-            </div>
-            <div class="job">
-                <h4>Database Administrator, Al Baraka Islamic Bank</h4>
-                <h5>Aug 2017 - Dec 2017</h5>
-            </div>
-            <div class="job">
-                <h4>Oracle DBA, KUSHITE Integrated Company</h4>
-                <h5>May 2015 - Aug 2017</h5>
-            </div>
-            <div class="job">
-                <h4>IT Support, TEJAN Company</h4>
-                <h5>Jan 2013 – Apr 2014</h5>
-            </div>
+    <section class="section public-apply" id="apply">
+      <div class="section-title">
+        <p class="eyebrow">Public admissions portal</p>
+        <h2>Applicant form with review, offer, and student conversion workflow.</h2>
+        <p>Submitting this form creates a real in-browser application record, logs an audit event, and queues a notification.</p>
+      </div>
+      <div class="grid two">
+        <form id="public-apply-form" class="card form-grid">
+          <input name="firstNameEn" placeholder="First name English" required>
+          <input name="lastNameEn" placeholder="Last name English" required>
+          <input name="firstNameAr" placeholder="الاسم الأول بالعربية">
+          <input name="lastNameAr" placeholder="اسم العائلة بالعربية">
+          <input name="email" type="email" placeholder="Email address" required>
+          <input name="phone" placeholder="Phone">
+          <select name="programId" required>
+            <option value="program_bsn">BSN - Bachelor of Science in Nursing</option>
+          </select>
+          <textarea class="full" name="notes" placeholder="Notes, qualifications, or document status"></textarea>
+          <button class="button full" type="submit">Submit application</button>
+        </form>
+        <div class="card">
+          <h3>Admissions workflow included</h3>
+          <p>Draft/submitted/under review/missing documents/eligible/rejected/waitlisted/offer sent/offer accepted/converted statuses are modeled.</p>
+          <p>Admissions users can approve, reject, issue offers, accept offers for demonstration, and convert applicants into students with generated IDs and initial invoices.</p>
+          <p>All critical actions create audit events and notification queue records.</p>
         </div>
+      </div>
+    </section>
 
-        <div class="section education">
-            <h3>Education & Certifications</h3>
-            <ul>
-                <li>B. Tech in Computer Science, National RIBAT University, Khartoum</li>
-                <li>Oracle Certified Professional 12C, Oracle</li>
-                <li>Oracle Certified Associate (OCA) & Professional (OCP)</li>
-                <li>PostgreSQL DBA Training, AKSWAVE Oracle Training</li>
-                <li>Extensive Oracle training at EGABI Learn including ASM & Clusterware, RAC, Data Guard</li>
-                <li>Oracle Certified Assistance OCA
-                    <ul>
-                        <li>03/2014 - 04/2014 - New Horizons Computer Learning Center</li>
-                        <li>SQL Fundamentals 04/2014 - 05/2014 - New Horizons Computer Learning Center</li>
-                        <li>Oracle Associate (OCA) 05/2014 - 06/2014 - New Horizons Computer Learning Center</li>
-                        <li>Oracle Professional (OCP) 03/2018 – EGABI Learn</li>
-                        <li>Oracle ASM & Clusterware 03/2018 – EGABI Learn</li>
-                        <li>Oracle Real Application Cluster (RAC) 03/2018 – EGABI Learn</li>
-                        <li>Oracle Data Guard Administration 09/2019 - Oracle</li>
-                        <li>Oracle Certified Professional 12C 09/2019 – AKSWAVE Oracle Training</li>
-                        <li>PostgreSQL DBA 09/2019 – AKSWAVE Oracle Training</li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
+    <section class="section portal" id="portal">
+      <div class="section-title">
+        <p class="eyebrow">Admin, student, faculty, finance, registrar</p>
+        <h2>Role-aware portal shell with working workflows.</h2>
+        <p>Use the switcher to impersonate seeded or converted users. Menus are filtered by permissions and every visible action updates the data store.</p>
+      </div>
+      <div id="notice-area" aria-live="polite"></div>
+      <div class="portal-shell">
+        <aside class="sidebar">
+          <div class="role-switcher">
+            <label for="user-switcher">Current user</label>
+            <select id="user-switcher"></select>
+          </div>
+          <div id="portal-menu" class="menu"></div>
+        </aside>
+        <section id="portal-panel" class="workspace" aria-live="polite"></section>
+      </div>
+    </section>
 
-        <div class="section languages">
-            <h3>Languages</h3>
-            <ul>
-                <li><span class="badge">English</span></li>
-                <li><span class="badge">Arabic</span></li>
-            </ul>
-        </div>
+    <section class="section" id="security">
+      <div class="section-title">
+        <p class="eyebrow">Enterprise security checklist</p>
+        <h2>Built around least privilege, validation, audit, secure uploads, and production hardening.</h2>
+      </div>
+      <div class="grid four">
+        <article class="card"><h3>RBAC</h3><p>Default roles, permissions, menu visibility, and service permission checks are included.</p></article>
+        <article class="card"><h3>Audit</h3><p>Admissions, registration, grades, payments, requests, CMS, exports, and security attempts are logged.</p></article>
+        <article class="card"><h3>Data protection</h3><p>Schema includes soft deletion, document metadata, private media paths, and sensitive setting flags.</p></article>
+        <article class="card"><h3>Deployment</h3><p>Security headers, queue, scheduler, backups, environment, and Laravel migration guidance are documented.</p></article>
+      </div>
+    </section>
 
-        <div class="section personal-attributes">
-            <h3>Personal Attributes</h3>
-            <ul>
-                <li><span class="badge">Analytical Thinking</span></li>
-                <li><span class="badge">Problem-Solving</span></li>
-                <li><span class="badge">Team Collaboration</span></li>
-                <li><span class="badge">Lifelong Learner</span></li>
-            </ul>
-        </div>
+    <section class="section" id="docs">
+      <div class="section-title">
+        <p class="eyebrow">Deliverables</p>
+        <h2>Implementation assets included in this repository.</h2>
+      </div>
+      <div class="grid three">
+        <article class="card"><h3>Database</h3><p><code>data/enterprise-schema.sql</code> and <code>data/default-seed.json</code> provide the MySQL schema baseline and seed data.</p></article>
+        <article class="card"><h3>API and services</h3><p><code>src/sis-services.js</code> contains core business rules. <code>api/openapi.json</code> documents versioned API endpoints.</p></article>
+        <article class="card"><h3>Operations guides</h3><p>Installation, deployment, database, module, security, backup, roles, API, and testing docs live under <code>docs/</code>.</p></article>
+      </div>
+    </section>
+  </main>
+
+  <aside class="chatbot" aria-label="Admissions chatbot">
+    <div class="chatbot-panel">
+      <div class="chatbot-header">
+        <strong>Admissions assistant</strong>
+        <span>Live chat ready</span>
+      </div>
+      <div id="chat-messages" class="chatbot-messages">
+        <div class="bubble agent">Welcome. Ask about programs, admissions, tuition, campus visits, or request a live agent.</div>
+      </div>
+      <form id="chat-form" class="toolbar" style="padding: 1rem;">
+        <input name="message" placeholder="Type your question" aria-label="Chat message">
+        <button class="button small" type="submit">Send</button>
+      </form>
     </div>
+  </aside>
 
-    <footer>
-        <p>Thank you for going through my CV. I would be very much obliged if I am given an opportunity for a personal interview at a time convenient for both of us, so that I can prove my mettle and give you more details about myself.</p>
-        <p>For further inquiries or collaborations, feel free to <a href="mailto:montasirabdalgadi@gmail.com">contact me</a>.</p>
-        <p>© 2024 Montasir Abdalgadi. All rights reserved.</p>
-    </footer>
+  <footer class="footer">
+    <div class="footer-grid">
+      <div>
+        <h3>Ain Al Khaleej University SIS</h3>
+        <p>Enterprise starter implementation covering admissions, academics, students, faculty, finance, CMS, reports, audit, bilingual UI, and deployment readiness.</p>
+      </div>
+      <div><h4>Portals</h4><a href="#portal">Admin</a><a href="#portal">Student</a><a href="#portal">Faculty</a><a href="#apply">Applicant</a></div>
+      <div><h4>Operations</h4><a href="docs/DEPLOYMENT.md">Deployment</a><a href="docs/SECURITY.md">Security</a><a href="docs/BACKUP_RESTORE.md">Backup</a></div>
+      <div><h4>Reference</h4><a href="data/enterprise-schema.sql">Schema</a><a href="api/openapi.json">API</a><a href="docs/MODULES.md">Modules</a></div>
+    </div>
+  </footer>
 </body>
 </html>

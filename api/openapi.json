@@ -1,0 +1,291 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ain Al Khaleej University SIS API",
+    "version": "1.0.0",
+    "description": "Versioned API contract for admissions, students, academics, registration, attendance, grades, finance, CMS, notifications, reports, and audit."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Version 1"
+    }
+  ],
+  "security": [
+    {
+      "sanctumOrBearer": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sanctumOrBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT or Laravel Sanctum token"
+      }
+    },
+    "schemas": {
+      "StandardSuccess": {
+        "type": "object",
+        "required": ["success", "message", "data"],
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "message": { "type": "string" },
+          "data": { "type": "object" },
+          "meta": { "type": "object" }
+        }
+      },
+      "StandardError": {
+        "type": "object",
+        "required": ["success", "message"],
+        "properties": {
+          "success": { "type": "boolean", "const": false },
+          "message": { "type": "string" },
+          "errors": { "type": "object" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Runtime health check",
+        "security": [],
+        "responses": {
+          "200": { "description": "API healthy" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate staff, faculty, students, applicants, or guardians with password verification",
+        "security": [],
+        "responses": {
+          "200": { "description": "Authenticated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StandardSuccess" } } } },
+          "422": { "description": "Validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StandardError" } } } }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout and write audit history",
+        "responses": {
+          "200": { "description": "Logged out" }
+        }
+      }
+    },
+    "/applicants": {
+      "post": {
+        "summary": "Create applicant account",
+        "security": [],
+        "responses": {
+          "201": { "description": "Applicant created" }
+        }
+      }
+    },
+    "/applications": {
+      "get": {
+        "summary": "List applications with filters and pagination",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "program_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "date_from", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "date_to", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": { "description": "Application list" }
+        }
+      },
+      "post": {
+        "summary": "Submit application draft or final submission",
+        "security": [],
+        "responses": {
+          "201": { "description": "Application submitted" }
+        }
+      }
+    },
+    "/applications/{id}/approve": {
+      "post": {
+        "summary": "Approve admission application",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Application approved" } }
+      }
+    },
+    "/applications/{id}/reject": {
+      "post": {
+        "summary": "Reject admission application",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Application rejected" } }
+      }
+    },
+    "/applications/{id}/issue-offer": {
+      "post": {
+        "summary": "Issue admission offer",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Offer issued" } }
+      }
+    },
+    "/applications/{id}/accept-offer": {
+      "post": {
+        "summary": "Accept admission offer",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Offer accepted" } }
+      }
+    },
+    "/applications/{id}/convert-to-student": {
+      "post": {
+        "summary": "Convert accepted applicant to student inside a transaction",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Student created" } }
+      }
+    },
+    "/students": {
+      "get": {
+        "summary": "List students with search, filters, sorting, and pagination",
+        "responses": { "200": { "description": "Student list" } }
+      },
+      "post": {
+        "summary": "Create student manually",
+        "responses": { "201": { "description": "Student created" } }
+      }
+    },
+    "/students/{id}/holds": {
+      "post": {
+        "summary": "Add student hold",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Hold created" } }
+      }
+    },
+    "/programs": {
+      "get": { "summary": "List public and admin program records", "responses": { "200": { "description": "Program list" } } },
+      "post": { "summary": "Create program", "responses": { "201": { "description": "Program created" } } }
+    },
+    "/courses": {
+      "get": { "summary": "List courses", "responses": { "200": { "description": "Course list" } } },
+      "post": { "summary": "Create course", "responses": { "201": { "description": "Course created" } } }
+    },
+    "/registrations": {
+      "post": {
+        "summary": "Register student in a section after all registration rules pass",
+        "responses": { "201": { "description": "Registered" }, "422": { "description": "Rule violation" } }
+      }
+    },
+    "/registrations/{id}/drop": {
+      "post": {
+        "summary": "Drop course during add/drop or registrar override",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Dropped" } }
+      }
+    },
+    "/attendance/sections/{sectionId}/sessions": {
+      "post": {
+        "summary": "Submit section attendance",
+        "parameters": [{ "name": "sectionId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Attendance submitted" } }
+      }
+    },
+    "/grades": {
+      "post": { "summary": "Submit grade marks", "responses": { "201": { "description": "Grade submitted" } } }
+    },
+    "/grades/{id}/approve": {
+      "post": {
+        "summary": "Approve grade and recalculate GPA",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Grade approved" } }
+      }
+    },
+    "/transcripts/{studentId}/issue": {
+      "post": {
+        "summary": "Issue official or unofficial transcript with QR verification code",
+        "parameters": [{ "name": "studentId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Transcript issued" } }
+      }
+    },
+    "/transcripts/verify/{verificationCode}": {
+      "get": {
+        "summary": "Public transcript verification with masked student identifier",
+        "security": [],
+        "parameters": [{ "name": "verificationCode", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Transcript verification result" } }
+      }
+    },
+    "/finance/invoices": {
+      "get": { "summary": "List invoices with filters and pagination", "responses": { "200": { "description": "Invoice list" } } },
+      "post": { "summary": "Create invoice", "responses": { "201": { "description": "Invoice created" } } }
+    },
+    "/finance/students/{id}/ledger": {
+      "get": {
+        "summary": "Get student ledger with running balances",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Student ledger" } }
+      }
+    },
+    "/finance/payments": {
+      "post": { "summary": "Record payment and generate receipt", "responses": { "201": { "description": "Payment recorded" } } }
+    },
+    "/requests": {
+      "get": { "summary": "List student workflow requests", "responses": { "200": { "description": "Request list" } } },
+      "post": { "summary": "Submit student request", "responses": { "201": { "description": "Request submitted" } } }
+    },
+    "/workflows/{id}/actions": {
+      "post": {
+        "summary": "Approve, reject, or return the current workflow step",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Workflow action recorded" } }
+      }
+    },
+    "/workflows/{id}/timeline": {
+      "get": {
+        "summary": "View workflow instance and action timeline",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Workflow timeline" } }
+      }
+    },
+    "/cms/pages": {
+      "get": { "summary": "List CMS pages", "responses": { "200": { "description": "CMS page list" } } },
+      "post": { "summary": "Create CMS page", "responses": { "201": { "description": "CMS page created" } } }
+    },
+    "/cms/pages/{id}": {
+      "patch": {
+        "summary": "Update and publish CMS page",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "CMS page updated" } }
+      }
+    },
+    "/chat/conversations": {
+      "post": {
+        "summary": "Create public live-chat conversation",
+        "security": [],
+        "responses": { "201": { "description": "Chat conversation created" } }
+      }
+    },
+    "/notifications": {
+      "get": { "summary": "List notifications", "responses": { "200": { "description": "Notification list" } } }
+    },
+    "/notifications/process": {
+      "post": { "summary": "Process queued notifications", "responses": { "200": { "description": "Notifications processed" } } }
+    },
+    "/scheduler/run": {
+      "post": { "summary": "Run payment reminder and attendance warning scheduled jobs", "responses": { "200": { "description": "Scheduler run completed" } } }
+    },
+    "/media-files": {
+      "post": {
+        "summary": "Register secure media upload metadata after extension, size, and checksum validation",
+        "responses": { "201": { "description": "Media file registered" } }
+      }
+    },
+    "/reports/{name}/export": {
+      "post": {
+        "summary": "Export report as Excel, PDF, or JSON",
+        "parameters": [{ "name": "name", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Report export queued or returned" } }
+      }
+    },
+    "/audit-logs": {
+      "get": { "summary": "List audit logs", "responses": { "200": { "description": "Audit log list" } } }
+    },
+    "/admin/reset": {
+      "post": { "summary": "Reset local runtime state", "responses": { "200": { "description": "Runtime state reset" } } }
+    }
+  }
+}
