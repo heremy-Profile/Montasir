@@ -1,0 +1,11 @@
+{
+  "name": "akh-university-enterprise-sis",
+  "version": "1.0.0",
+  "description": "Ain Al Khaleej University enterprise Student Information System starter.",
+  "type": "module",
+  "scripts": {
+    "test": "node tests/sis-services.test.mjs"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

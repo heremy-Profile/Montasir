@@ -1,0 +1,209 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Ain Al Khaleej University SIS API",
+    "version": "1.0.0",
+    "description": "Versioned API contract for admissions, students, academics, registration, attendance, grades, finance, CMS, notifications, reports, and audit."
+  },
+  "servers": [
+    {
+      "url": "/api/v1",
+      "description": "Version 1"
+    }
+  ],
+  "security": [
+    {
+      "sanctumOrBearer": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sanctumOrBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT or Laravel Sanctum token"
+      }
+    },
+    "schemas": {
+      "StandardSuccess": {
+        "type": "object",
+        "required": ["success", "message", "data"],
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "message": { "type": "string" },
+          "data": { "type": "object" },
+          "meta": { "type": "object" }
+        }
+      },
+      "StandardError": {
+        "type": "object",
+        "required": ["success", "message"],
+        "properties": {
+          "success": { "type": "boolean", "const": false },
+          "message": { "type": "string" },
+          "errors": { "type": "object" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate staff, faculty, students, applicants, or guardians",
+        "security": [],
+        "responses": {
+          "200": { "description": "Authenticated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StandardSuccess" } } } },
+          "422": { "description": "Validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StandardError" } } } }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "Logout and write audit history",
+        "responses": {
+          "200": { "description": "Logged out" }
+        }
+      }
+    },
+    "/applicants": {
+      "post": {
+        "summary": "Create applicant account",
+        "security": [],
+        "responses": {
+          "201": { "description": "Applicant created" }
+        }
+      }
+    },
+    "/applications": {
+      "get": {
+        "summary": "List applications with filters and pagination",
+        "parameters": [
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "program_id", "in": "query", "schema": { "type": "integer" } },
+          { "name": "date_from", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "date_to", "in": "query", "schema": { "type": "string", "format": "date" } }
+        ],
+        "responses": {
+          "200": { "description": "Application list" }
+        }
+      },
+      "post": {
+        "summary": "Submit application draft or final submission",
+        "security": [],
+        "responses": {
+          "201": { "description": "Application submitted" }
+        }
+      }
+    },
+    "/applications/{id}/approve": {
+      "post": {
+        "summary": "Approve admission application",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Application approved" } }
+      }
+    },
+    "/applications/{id}/reject": {
+      "post": {
+        "summary": "Reject admission application",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Application rejected" } }
+      }
+    },
+    "/applications/{id}/convert-to-student": {
+      "post": {
+        "summary": "Convert accepted applicant to student inside a transaction",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Student created" } }
+      }
+    },
+    "/students": {
+      "get": {
+        "summary": "List students with search, filters, sorting, and pagination",
+        "responses": { "200": { "description": "Student list" } }
+      },
+      "post": {
+        "summary": "Create student manually",
+        "responses": { "201": { "description": "Student created" } }
+      }
+    },
+    "/students/{id}/holds": {
+      "post": {
+        "summary": "Add student hold",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Hold created" } }
+      }
+    },
+    "/programs": {
+      "get": { "summary": "List public and admin program records", "responses": { "200": { "description": "Program list" } } },
+      "post": { "summary": "Create program", "responses": { "201": { "description": "Program created" } } }
+    },
+    "/courses": {
+      "get": { "summary": "List courses", "responses": { "200": { "description": "Course list" } } },
+      "post": { "summary": "Create course", "responses": { "201": { "description": "Course created" } } }
+    },
+    "/registrations": {
+      "post": {
+        "summary": "Register student in a section after all registration rules pass",
+        "responses": { "201": { "description": "Registered" }, "422": { "description": "Rule violation" } }
+      }
+    },
+    "/registrations/{id}/drop": {
+      "post": {
+        "summary": "Drop course during add/drop or registrar override",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Dropped" } }
+      }
+    },
+    "/attendance/sections/{sectionId}/sessions": {
+      "post": {
+        "summary": "Submit section attendance",
+        "parameters": [{ "name": "sectionId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Attendance submitted" } }
+      }
+    },
+    "/grades": {
+      "post": { "summary": "Submit grade marks", "responses": { "201": { "description": "Grade submitted" } } }
+    },
+    "/grades/{id}/approve": {
+      "post": {
+        "summary": "Approve grade and recalculate GPA",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Grade approved" } }
+      }
+    },
+    "/transcripts/{studentId}/issue": {
+      "post": {
+        "summary": "Issue official or unofficial transcript with QR verification code",
+        "parameters": [{ "name": "studentId", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "201": { "description": "Transcript issued" } }
+      }
+    },
+    "/finance/invoices": {
+      "post": { "summary": "Create invoice", "responses": { "201": { "description": "Invoice created" } } }
+    },
+    "/finance/payments": {
+      "post": { "summary": "Record payment and generate receipt", "responses": { "201": { "description": "Payment recorded" } } }
+    },
+    "/requests": {
+      "get": { "summary": "List student workflow requests", "responses": { "200": { "description": "Request list" } } },
+      "post": { "summary": "Submit student request", "responses": { "201": { "description": "Request submitted" } } }
+    },
+    "/cms/pages": {
+      "get": { "summary": "List CMS pages", "responses": { "200": { "description": "CMS page list" } } },
+      "post": { "summary": "Create CMS page", "responses": { "201": { "description": "CMS page created" } } }
+    },
+    "/notifications": {
+      "get": { "summary": "List notifications", "responses": { "200": { "description": "Notification list" } } }
+    },
+    "/reports/{name}/export": {
+      "post": {
+        "summary": "Export report as Excel, PDF, or JSON",
+        "parameters": [{ "name": "name", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Report export queued or returned" } }
+      }
+    },
+    "/audit-logs": {
+      "get": { "summary": "List audit logs", "responses": { "200": { "description": "Audit log list" } } }
+    }
+  }
+}
