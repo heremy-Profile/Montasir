@@ -74,14 +74,19 @@ Runtime security controls:
 - `POST /api/v1/grades`
 - `POST /api/v1/grades/{id}/approve`
 - `POST /api/v1/transcripts/{id}/issue`
+- `GET /api/v1/transcripts/verify/{verificationCode}`
 - `GET /api/v1/finance/invoices`
+- `GET /api/v1/finance/students/{id}/ledger`
 - `POST /api/v1/finance/payments`
 - `POST /api/v1/requests`
+- `POST /api/v1/workflows/{id}/actions`
+- `GET /api/v1/workflows/{id}/timeline`
 - `GET /api/v1/cms/pages`
 - `PATCH /api/v1/cms/pages/{id}`
 - `POST /api/v1/chat/conversations`
 - `POST /api/v1/media-files`
 - `POST /api/v1/notifications/process`
+- `POST /api/v1/scheduler/run`
 - `POST /api/v1/reports/{name}/export`
 - `GET /api/v1/audit-logs`
 - `POST /api/v1/admin/reset`
@@ -97,3 +102,12 @@ The server emits:
 - `Cache-Control: no-store`
 
 Production deployments should add HTTPS/HSTS and a stricter host-specific CSP.
+
+## Enterprise workflow additions
+
+- Student requests automatically start the standard two-step approval workflow.
+- Workflow actions are audited and synced back to the request status.
+- Official transcripts are persisted with verification codes.
+- Public transcript verification returns masked student identifiers only.
+- Student ledgers merge invoices and payments into running-balance entries.
+- Scheduler jobs can generate payment reminders and attendance-warning notifications.

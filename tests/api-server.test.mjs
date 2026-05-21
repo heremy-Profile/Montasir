@@ -82,6 +82,13 @@ try {
   assert.equal(registration.response.status, 201);
   assert.equal(registration.payload.data.registration.status, "registered");
 
+  const attendance = await request("POST", "/api/v1/attendance/sections/section_anat101_a/sessions", {
+    meetingDate: "2026-09-01",
+    records: [{ studentId, status: "absent" }]
+  }, token);
+  assert.equal(attendance.response.status, 201);
+  assert.equal(attendance.payload.data.session.records[0].status, "absent");
+
   const grade = await request("POST", "/api/v1/grades", {
     studentId,
     courseId: "course_anat101",
@@ -94,6 +101,15 @@ try {
   const approvedGrade = await request("POST", `/api/v1/grades/${grade.payload.data.grade.id}/approve`, undefined, token);
   assert.equal(approvedGrade.response.status, 200);
   assert.equal(approvedGrade.payload.data.grade.status, "approved");
+
+  const transcript = await request("POST", `/api/v1/transcripts/${studentId}/issue`, { official: true }, token);
+  assert.equal(transcript.response.status, 201);
+  assert.match(transcript.payload.data.transcript.verificationCode, /^TRX-2026-\d{6}$/);
+
+  const verification = await request("GET", `/api/v1/transcripts/verify/${transcript.payload.data.transcript.verificationCode}`);
+  assert.equal(verification.response.status, 200);
+  assert.equal(verification.payload.data.verification.status, "valid");
+  assert.match(verification.payload.data.verification.studentNumberMasked, /^AKU/);
 
   const students = await request("GET", "/api/v1/students?q=AKU", undefined, token);
   assert.equal(students.response.status, 200);
@@ -113,6 +129,38 @@ try {
   }, token);
   assert.equal(payment.response.status, 201);
   assert.match(payment.payload.data.payment.receiptNumber, /^RCT-2026-\d{6}$/);
+
+  const ledger = await request("GET", `/api/v1/finance/students/${studentId}/ledger`, undefined, token);
+  assert.equal(ledger.response.status, 200);
+  assert.equal(ledger.payload.data.ledger.balance, 0);
+  assert.equal(ledger.payload.data.ledger.entries.length, 2);
+
+  const workflowRequest = await request("POST", "/api/v1/requests", {
+    studentId,
+    type: "Enrollment letter",
+    description: "Need proof of enrollment."
+  }, token);
+  assert.equal(workflowRequest.response.status, 201);
+  const workflowId = workflowRequest.payload.data.request.workflowInstanceId;
+  assert.ok(workflowId);
+
+  const firstApproval = await request("POST", `/api/v1/workflows/${workflowId}/actions`, {
+    action: "approve",
+    comment: "Officer reviewed."
+  }, token);
+  assert.equal(firstApproval.response.status, 200);
+  assert.equal(firstApproval.payload.data.workflow.status, "in_progress");
+
+  const finalApproval = await request("POST", `/api/v1/workflows/${workflowId}/actions`, {
+    action: "approve",
+    comment: "Registrar approved."
+  }, token);
+  assert.equal(finalApproval.response.status, 200);
+  assert.equal(finalApproval.payload.data.workflow.status, "approved");
+
+  const timeline = await request("GET", `/api/v1/workflows/${workflowId}/timeline`, undefined, token);
+  assert.equal(timeline.response.status, 200);
+  assert.equal(timeline.payload.data.timeline.actions.length, 2);
 
   const audit = await request("GET", "/api/v1/audit-logs?per_page=5", undefined, token);
   assert.equal(audit.response.status, 200);
@@ -145,6 +193,11 @@ try {
   assert.equal(notifications.response.status, 200);
   assert.ok(notifications.payload.data.notifications.length >= 1);
   assert.ok(notifications.payload.data.notifications.every((notification) => notification.status === "sent"));
+
+  const scheduler = await request("POST", "/api/v1/scheduler/run", { jobKey: "attendance_warnings" }, token);
+  assert.equal(scheduler.response.status, 200);
+  assert.equal(scheduler.payload.data.scheduler.results[0].jobKey, "attendance_warnings");
+  assert.equal(scheduler.payload.data.scheduler.results[0].generated, 1);
 
   const unauthorized = await request("GET", "/api/v1/students");
   assert.equal(unauthorized.response.status, 401);

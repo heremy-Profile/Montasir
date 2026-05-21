@@ -24,6 +24,7 @@ Current tests cover:
 - Report export and audit logging.
 - Runtime API health, security headers, login, application workflow, student conversion, registration, grade approval, invoice listing, payment recording, audit listing, and unauthorized access handling.
 - Runtime API failed-login handling, password-hash redaction, secure media metadata validation, blocked executable upload metadata, and notification queue processing.
+- Runtime API transcript issuance and public verification, student ledger, two-step workflow approval, attendance submission, and scheduler-generated attendance warnings.
 
 ## Manual scenarios
 

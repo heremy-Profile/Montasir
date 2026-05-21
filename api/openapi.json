@@ -201,9 +201,24 @@
         "responses": { "201": { "description": "Transcript issued" } }
       }
     },
+    "/transcripts/verify/{verificationCode}": {
+      "get": {
+        "summary": "Public transcript verification with masked student identifier",
+        "security": [],
+        "parameters": [{ "name": "verificationCode", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Transcript verification result" } }
+      }
+    },
     "/finance/invoices": {
       "get": { "summary": "List invoices with filters and pagination", "responses": { "200": { "description": "Invoice list" } } },
       "post": { "summary": "Create invoice", "responses": { "201": { "description": "Invoice created" } } }
+    },
+    "/finance/students/{id}/ledger": {
+      "get": {
+        "summary": "Get student ledger with running balances",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Student ledger" } }
+      }
     },
     "/finance/payments": {
       "post": { "summary": "Record payment and generate receipt", "responses": { "201": { "description": "Payment recorded" } } }
@@ -211,6 +226,20 @@
     "/requests": {
       "get": { "summary": "List student workflow requests", "responses": { "200": { "description": "Request list" } } },
       "post": { "summary": "Submit student request", "responses": { "201": { "description": "Request submitted" } } }
+    },
+    "/workflows/{id}/actions": {
+      "post": {
+        "summary": "Approve, reject, or return the current workflow step",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Workflow action recorded" } }
+      }
+    },
+    "/workflows/{id}/timeline": {
+      "get": {
+        "summary": "View workflow instance and action timeline",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Workflow timeline" } }
+      }
     },
     "/cms/pages": {
       "get": { "summary": "List CMS pages", "responses": { "200": { "description": "CMS page list" } } },
@@ -235,6 +264,9 @@
     },
     "/notifications/process": {
       "post": { "summary": "Process queued notifications", "responses": { "200": { "description": "Notifications processed" } } }
+    },
+    "/scheduler/run": {
+      "post": { "summary": "Run payment reminder and attendance warning scheduled jobs", "responses": { "200": { "description": "Scheduler run completed" } } }
     },
     "/media-files": {
       "post": {

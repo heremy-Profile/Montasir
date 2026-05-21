@@ -62,7 +62,10 @@
 - Student request submission.
 - Approval/rejection/completion statuses.
 - Approval history.
-- Extension point for multi-step workflow instances.
+- Reusable multi-step workflow definitions.
+- Workflow instances linked to student requests.
+- Workflow action timeline with approve/reject/return actions.
+- Subject status synchronization after each workflow decision.
 
 ## CMS and public website
 
@@ -74,9 +77,18 @@
 ## Notifications, chat, reports
 
 - In-app/email-ready notification queue records.
+- Notification processing endpoint.
+- Scheduler-generated payment reminders.
+- Scheduler-generated attendance warnings.
 - Live chat conversation records.
 - Dashboard reports and JSON export.
 - Audit trail export readiness.
+
+## Transcript verification and finance ledger
+
+- Official transcript issues are persisted with verification codes.
+- Public verification masks student identifiers.
+- Student ledger combines invoices and payments with running balances.
 
 ## Enterprise extension modules
 

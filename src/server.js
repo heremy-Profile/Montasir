@@ -22,6 +22,7 @@ const publicRoutes = [
   ["GET", /^\/api\/v1\/health$/],
   ["POST", /^\/api\/v1\/auth\/login$/],
   ["POST", /^\/api\/v1\/applications$/],
+  ["GET", /^\/api\/v1\/transcripts\/verify\/[^/]+$/],
   ["GET", /^\/api\/v1\/cms\/pages$/],
   ["POST", /^\/api\/v1\/chat\/conversations$/]
 ];
@@ -401,6 +402,15 @@ const routes = [
     })
   },
   {
+    method: "GET",
+    regex: /^\/api\/v1\/transcripts\/verify\/(?<code>[^/]+)$/,
+    handler: async ({ service, url }) => ({
+      data: {
+        verification: service.verifyTranscript(decodeURIComponent(url.pathname.split("/")[5]))
+      }
+    })
+  },
+  {
     method: "POST",
     regex: /^\/api\/v1\/finance\/payments$/,
     handler: async ({ body, service }) => {
@@ -430,6 +440,15 @@ const routes = [
     }
   },
   {
+    method: "GET",
+    regex: /^\/api\/v1\/finance\/students\/(?<id>[^/]+)\/ledger$/,
+    handler: async ({ service, url }) => ({
+      data: {
+        ledger: service.studentLedger(url.pathname.split("/")[5])
+      }
+    })
+  },
+  {
     method: "POST",
     regex: /^\/api\/v1\/requests$/,
     handler: async ({ body, service }) => {
@@ -439,6 +458,27 @@ const routes = [
         data: { request: service.createRequest(body.studentId, body.type, body) }
       };
     }
+  },
+  {
+    method: "POST",
+    regex: /^\/api\/v1\/workflows\/(?<id>[^/]+)\/actions$/,
+    handler: async ({ body, service, url }) => {
+      requireFields(body, ["action"]);
+      return {
+        data: {
+          workflow: service.actOnWorkflow(url.pathname.split("/")[4], body.action, body.comment || "")
+        }
+      };
+    }
+  },
+  {
+    method: "GET",
+    regex: /^\/api\/v1\/workflows\/(?<id>[^/]+)\/timeline$/,
+    handler: async ({ service, url }) => ({
+      data: {
+        timeline: service.workflowTimeline(url.pathname.split("/")[4])
+      }
+    })
   },
   {
     method: "GET",
@@ -507,6 +547,15 @@ const routes = [
     handler: async ({ body, service }) => ({
       data: {
         notifications: service.processNotifications(body.limit || 25)
+      }
+    })
+  },
+  {
+    method: "POST",
+    regex: /^\/api\/v1\/scheduler\/run$/,
+    handler: async ({ body, service }) => ({
+      data: {
+        scheduler: service.runScheduledJobs(body.jobKey || "all")
       }
     })
   },

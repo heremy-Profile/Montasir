@@ -334,9 +334,43 @@ export function createInitialState() {
       { letter: "F", min: 0, max: 59.99, points: 0, pass: false, includedInGpa: true }
     ],
     grades: [],
+    transcriptIssues: [],
     invoices: [],
     payments: [],
     requests: [],
+    workflows: [
+      {
+        id: "workflow_student_request",
+        key: "student_request_standard",
+        nameEn: "Standard Student Request Approval",
+        nameAr: "اعتماد طلب الطالب القياسي",
+        active: true,
+        steps: [
+          {
+            id: "step_officer_review",
+            order: 1,
+            nameEn: "Officer review",
+            nameAr: "مراجعة الموظف المختص",
+            permission: "view_dashboard",
+            allowApprove: true,
+            allowReject: true,
+            allowReturn: true
+          },
+          {
+            id: "step_registrar_approval",
+            order: 2,
+            nameEn: "Registrar approval",
+            nameAr: "اعتماد المسجل",
+            permission: "manage_students",
+            allowApprove: true,
+            allowReject: true,
+            allowReturn: true
+          }
+        ]
+      }
+    ],
+    workflowInstances: [],
+    workflowActions: [],
     notifications: [],
     cmsPages: [
       {
@@ -888,8 +922,36 @@ export class SisService {
       grades: this.state.grades.filter((grade) => grade.studentId === studentId && grade.status === "approved"),
       issuedAt: nowIso()
     };
+    if (!this.state.transcriptIssues) {
+      this.state.transcriptIssues = [];
+    }
+    this.state.transcriptIssues.unshift(transcript);
     this.audit("transcript_issued", "transcripts", transcript.id, null, transcript);
     return transcript;
+  }
+
+  verifyTranscript(verificationCode) {
+    const transcript = (this.state.transcriptIssues || []).find(
+      (item) => item.verificationCode === verificationCode
+    );
+    if (!transcript) {
+      throw new Error("Transcript verification code not found.");
+    }
+    const student = this.findById(this.state.students, transcript.studentId, "Student");
+    const program = this.state.programs.find((item) => item.id === student.programId);
+    this.audit("transcript_verified", "transcripts", transcript.id, null, {
+      verificationCode
+    });
+    return {
+      verificationCode,
+      status: transcript.status,
+      official: transcript.official,
+      issuedAt: transcript.issuedAt,
+      studentName: `${student.firstNameEn} ${student.lastNameEn}`.trim(),
+      studentNumberMasked: maskIdentifier(student.studentNumber),
+      program: program?.nameEn || null,
+      gpa: transcript.gpa.cumulativeGpa
+    };
   }
 
   createInvoice(studentId, description, amount) {
@@ -942,6 +1004,54 @@ export class SisService {
     return payment;
   }
 
+  studentLedger(studentId) {
+    this.assertPermission("view_financial_reports");
+    const student = this.findById(this.state.students, studentId, "Student");
+    const invoiceRows = this.state.invoices
+      .filter((invoice) => invoice.studentId === studentId)
+      .map((invoice) => ({
+        type: "invoice",
+        number: invoice.invoiceNumber,
+        description: invoice.description,
+        debit: invoice.amount,
+        credit: 0,
+        balanceImpact: invoice.amount,
+        status: invoice.status,
+        postedAt: invoice.issuedAt
+      }));
+    const paymentRows = this.state.payments
+      .filter((payment) => payment.studentId === studentId)
+      .map((payment) => ({
+        type: "payment",
+        number: payment.receiptNumber,
+        description: `${payment.method} payment`,
+        debit: 0,
+        credit: payment.amount,
+        balanceImpact: -payment.amount,
+        status: payment.status,
+        postedAt: payment.paidAt
+      }));
+    const entries = [...invoiceRows, ...paymentRows]
+      .sort((a, b) => String(a.postedAt).localeCompare(String(b.postedAt)));
+    let runningBalance = 0;
+    for (const entry of entries) {
+      runningBalance += entry.balanceImpact;
+      entry.runningBalance = Number(runningBalance.toFixed(2));
+    }
+    this.audit("student_ledger_viewed", "finance", studentId, null, {
+      entries: entries.length
+    });
+    return {
+      student: {
+        id: student.id,
+        studentNumber: student.studentNumber,
+        name: `${student.firstNameEn} ${student.lastNameEn}`.trim()
+      },
+      entries,
+      balance: Number(runningBalance.toFixed(2))
+    };
+  }
+
   createRequest(studentId, type, payload = {}) {
     const request = {
       id: uid("request"),
@@ -956,6 +1066,8 @@ export class SisService {
       createdAt: nowIso()
     };
     this.state.requests.push(request);
+    const workflow = this.startWorkflow("student_request_standard", "student_request", request.id);
+    request.workflowInstanceId = workflow.id;
     this.audit("request_submitted", "requests", request.id, null, request);
     return request;
   }
@@ -975,6 +1087,123 @@ export class SisService {
     });
     this.audit("request_status_changed", "requests", request.id, old, request);
     return request;
+  }
+
+  startWorkflow(workflowKey, subjectType, subjectId) {
+    const workflow = (this.state.workflows || []).find((item) => item.key === workflowKey && item.active);
+    if (!workflow) {
+      throw new Error(`Workflow not found: ${workflowKey}`);
+    }
+    if (!this.state.workflowInstances) this.state.workflowInstances = [];
+    if (!this.state.workflowActions) this.state.workflowActions = [];
+    const firstStep = [...workflow.steps].sort((a, b) => a.order - b.order)[0];
+    const instance = {
+      id: uid("workflow_instance"),
+      workflowId: workflow.id,
+      workflowKey: workflow.key,
+      subjectType,
+      subjectId,
+      status: "in_progress",
+      currentStepId: firstStep?.id || null,
+      startedAt: nowIso(),
+      completedAt: null
+    };
+    this.state.workflowInstances.unshift(instance);
+    this.audit("workflow_started", "workflows", instance.id, null, instance);
+    return instance;
+  }
+
+  actOnWorkflow(instanceId, action, comment = "") {
+    if (!["approve", "reject", "return"].includes(action)) {
+      throw new Error("Invalid workflow action.");
+    }
+    const instance = this.findById(this.state.workflowInstances || [], instanceId, "Workflow instance");
+    const workflow = this.findById(this.state.workflows || [], instance.workflowId, "Workflow");
+    if (instance.status !== "in_progress") {
+      throw new Error("Workflow instance is not in progress.");
+    }
+    const steps = [...workflow.steps].sort((a, b) => a.order - b.order);
+    const currentIndex = steps.findIndex((step) => step.id === instance.currentStepId);
+    const currentStep = steps[currentIndex];
+    if (!currentStep) {
+      throw new Error("Current workflow step not found.");
+    }
+    if (currentStep.permission) {
+      this.assertPermission(currentStep.permission);
+    }
+    if (action === "reject" && !currentStep.allowReject) {
+      throw new Error("Reject is not allowed for this step.");
+    }
+    if (action === "return" && !currentStep.allowReturn) {
+      throw new Error("Return is not allowed for this step.");
+    }
+
+    const old = clone(instance);
+    const workflowAction = {
+      id: uid("workflow_action"),
+      instanceId,
+      stepId: currentStep.id,
+      action,
+      comment,
+      actorUserId: this.currentUser()?.id || null,
+      createdAt: nowIso()
+    };
+    if (!this.state.workflowActions) this.state.workflowActions = [];
+    this.state.workflowActions.unshift(workflowAction);
+
+    if (action === "reject") {
+      instance.status = "rejected";
+      instance.completedAt = nowIso();
+      this.syncWorkflowSubjectStatus(instance, "rejected");
+    } else if (action === "return") {
+      instance.status = "returned";
+      instance.completedAt = nowIso();
+      this.syncWorkflowSubjectStatus(instance, "pending_student_action");
+    } else {
+      const nextStep = steps[currentIndex + 1];
+      if (nextStep) {
+        instance.currentStepId = nextStep.id;
+        this.syncWorkflowSubjectStatus(instance, "under_review");
+      } else {
+        instance.status = "approved";
+        instance.currentStepId = null;
+        instance.completedAt = nowIso();
+        this.syncWorkflowSubjectStatus(instance, "approved");
+      }
+    }
+
+    this.audit("workflow_action_recorded", "workflows", instance.id, old, {
+      instance,
+      action: workflowAction
+    });
+    return instance;
+  }
+
+  syncWorkflowSubjectStatus(instance, status) {
+    if (instance.subjectType === "student_request") {
+      const request = (this.state.requests || []).find((item) => item.id === instance.subjectId);
+      if (request) {
+        request.status = status;
+        request.approvals.push({
+          action: status,
+          workflowInstanceId: instance.id,
+          userId: this.currentUser()?.id || null,
+          createdAt: nowIso()
+        });
+      }
+    }
+  }
+
+  workflowTimeline(instanceId) {
+    const instance = this.findById(this.state.workflowInstances || [], instanceId, "Workflow instance");
+    const workflow = this.findById(this.state.workflows || [], instance.workflowId, "Workflow");
+    return {
+      instance,
+      workflow,
+      actions: (this.state.workflowActions || [])
+        .filter((action) => action.instanceId === instanceId)
+        .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+    };
   }
 
   publishCmsPage(pageId, updates) {
@@ -1087,6 +1316,62 @@ export class SisService {
     return queued;
   }
 
+  runScheduledJobs(jobKey = "all") {
+    this.assertPermission("manage_settings");
+    const results = [];
+    if (jobKey === "all" || jobKey === "payment_reminders") {
+      const unpaid = this.state.invoices.filter((invoice) => invoice.balance > 0);
+      for (const invoice of unpaid) {
+        this.notify(invoice.studentId, "payment_reminder", {
+          invoiceNumber: invoice.invoiceNumber,
+          balance: invoice.balance
+        });
+      }
+      results.push({ jobKey: "payment_reminders", generated: unpaid.length });
+    }
+    if (jobKey === "all" || jobKey === "attendance_warnings") {
+      const warnings = this.calculateAttendanceWarnings();
+      for (const warning of warnings) {
+        this.notify(warning.studentId, "attendance_warning", warning);
+      }
+      results.push({ jobKey: "attendance_warnings", generated: warnings.length });
+    }
+    this.audit("scheduled_jobs_run", "scheduler", jobKey, null, { results });
+    return {
+      ranAt: nowIso(),
+      results
+    };
+  }
+
+  calculateAttendanceWarnings() {
+    const threshold = this.state.settings.attendanceThreshold;
+    const grouped = new Map();
+    for (const session of this.state.attendance) {
+      for (const record of session.records) {
+        const key = `${record.studentId}:${session.sectionId}`;
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            studentId: record.studentId,
+            sectionId: session.sectionId,
+            total: 0,
+            absences: 0
+          });
+        }
+        const item = grouped.get(key);
+        item.total += 1;
+        if (["absent", "late"].includes(record.status)) {
+          item.absences += 1;
+        }
+      }
+    }
+    return [...grouped.values()]
+      .map((item) => ({
+        ...item,
+        absencePercentage: item.total === 0 ? 0 : Number(((item.absences / item.total) * 100).toFixed(2))
+      }))
+      .filter((item) => item.absencePercentage >= threshold);
+  }
+
   buildDashboard() {
     const outstanding = this.state.invoices.reduce((sum, invoice) => sum + invoice.balance, 0);
     return {
@@ -1145,4 +1430,12 @@ function cryptoSafeUuid() {
     const value = char === "x" ? rand : (rand & 0x3) | 0x8;
     return value.toString(16);
   });
+}
+
+function maskIdentifier(value = "") {
+  const text = String(value);
+  if (text.length <= 4) {
+    return "*".repeat(text.length);
+  }
+  return `${text.slice(0, 3)}${"*".repeat(Math.max(text.length - 6, 3))}${text.slice(-3)}`;
 }

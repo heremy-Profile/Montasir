@@ -41,9 +41,11 @@ Error:
 - `/api/v1/transcripts`
 - `/api/v1/finance`
 - `/api/v1/requests`
+- `/api/v1/workflows`
 - `/api/v1/reports`
 - `/api/v1/cms`
 - `/api/v1/notifications`
+- `/api/v1/scheduler`
 - `/api/v1/audit-logs`
 
 ## Requirements

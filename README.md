@@ -11,6 +11,7 @@ This repository now contains a dependency-free enterprise SIS starter for Ain Al
 - Seed data in `data/default-seed.json`.
 - Versioned API contract in `api/openapi.json`.
 - Dependency-free local API runtime in `src/server.js` with auth sessions, persistent state, security headers, validation, and standard JSON responses.
+- Enterprise workflow upgrades: transcript verification, student ledger, two-step request workflow approvals, and scheduler-generated reminders/warnings.
 - Automated service tests in `tests/sis-services.test.mjs`.
 - Operations documentation under `docs/`.
 
