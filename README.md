@@ -10,6 +10,7 @@ This repository now contains a dependency-free enterprise SIS starter for Ain Al
 - MySQL 8 schema baseline in `data/enterprise-schema.sql`.
 - Seed data in `data/default-seed.json`.
 - Versioned API contract in `api/openapi.json`.
+- Dependency-free local API runtime in `src/server.js` with auth sessions, persistent state, security headers, validation, and standard JSON responses.
 - Automated service tests in `tests/sis-services.test.mjs`.
 - Operations documentation under `docs/`.
 
@@ -21,6 +22,14 @@ python3 -m http.server 8080
 ```
 
 Open `http://localhost:8080`.
+
+## Run the API
+
+```bash
+npm start
+```
+
+The API listens on `http://localhost:3000` by default and persists state to `data/runtime-state.json` unless `SIS_STATE_PATH` is set. See `docs/RUNTIME_API.md`.
 
 ## Production path
 

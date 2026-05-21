@@ -47,6 +47,15 @@
     }
   },
   "paths": {
+    "/health": {
+      "get": {
+        "summary": "Runtime health check",
+        "security": [],
+        "responses": {
+          "200": { "description": "API healthy" }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "summary": "Authenticate staff, faculty, students, applicants, or guardians",
@@ -107,6 +116,20 @@
         "summary": "Reject admission application",
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
         "responses": { "200": { "description": "Application rejected" } }
+      }
+    },
+    "/applications/{id}/issue-offer": {
+      "post": {
+        "summary": "Issue admission offer",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Offer issued" } }
+      }
+    },
+    "/applications/{id}/accept-offer": {
+      "post": {
+        "summary": "Accept admission offer",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Offer accepted" } }
       }
     },
     "/applications/{id}/convert-to-student": {
@@ -179,6 +202,7 @@
       }
     },
     "/finance/invoices": {
+      "get": { "summary": "List invoices with filters and pagination", "responses": { "200": { "description": "Invoice list" } } },
       "post": { "summary": "Create invoice", "responses": { "201": { "description": "Invoice created" } } }
     },
     "/finance/payments": {
@@ -192,6 +216,20 @@
       "get": { "summary": "List CMS pages", "responses": { "200": { "description": "CMS page list" } } },
       "post": { "summary": "Create CMS page", "responses": { "201": { "description": "CMS page created" } } }
     },
+    "/cms/pages/{id}": {
+      "patch": {
+        "summary": "Update and publish CMS page",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "CMS page updated" } }
+      }
+    },
+    "/chat/conversations": {
+      "post": {
+        "summary": "Create public live-chat conversation",
+        "security": [],
+        "responses": { "201": { "description": "Chat conversation created" } }
+      }
+    },
     "/notifications": {
       "get": { "summary": "List notifications", "responses": { "200": { "description": "Notification list" } } }
     },
@@ -204,6 +242,9 @@
     },
     "/audit-logs": {
       "get": { "summary": "List audit logs", "responses": { "200": { "description": "Audit log list" } } }
+    },
+    "/admin/reset": {
+      "post": { "summary": "Reset local runtime state", "responses": { "200": { "description": "Runtime state reset" } } }
     }
   }
 }

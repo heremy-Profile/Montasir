@@ -22,6 +22,7 @@ Current tests cover:
 - Payment recording and receipt generation.
 - Student request workflow.
 - Report export and audit logging.
+- Runtime API health, security headers, login, application workflow, student conversion, registration, grade approval, invoice listing, payment recording, audit listing, and unauthorized access handling.
 
 ## Manual scenarios
 

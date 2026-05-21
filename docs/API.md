@@ -2,6 +2,8 @@
 
 The versioned OpenAPI contract is stored at `api/openapi.json`.
 
+The runnable dependency-free API implementation is stored at `src/server.js`; see `RUNTIME_API.md` for local startup and endpoint examples.
+
 ## Response format
 
 Success:
