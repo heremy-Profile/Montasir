@@ -8,6 +8,9 @@
 - Audit events for sensitive workflows.
 - Bilingual content stored as separate English/Arabic fields.
 - File metadata schema with private disk, MIME type, extension, checksum, size, and uploader.
+- Runtime API password verification with PBKDF2-SHA512 for seeded users.
+- Runtime API failed-login counters, temporary lockout, session expiry, and password-hash redaction.
+- Secure media-file registration checks for extension allowlist, executable denial, file size limits, and SHA-256 checksum shape.
 
 ## Required backend controls
 

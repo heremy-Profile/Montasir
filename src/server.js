@@ -2,9 +2,13 @@ import http from "node:http";
 import { URL } from "node:url";
 import { PersistentSisStore } from "./sis-store.js";
 import { SisService } from "./sis-services.js";
+import { createSessionToken, ensureRuntimeCredentials, publicUser, verifyPassword } from "./security.js";
 
 const DEFAULT_STATE_PATH = new URL("../data/runtime-state.json", import.meta.url).pathname;
 const jsonContentType = "application/json; charset=utf-8";
+const SESSION_TTL_MS = 60 * 60 * 1000;
+const LOCKOUT_AFTER_FAILURES = 5;
+const LOCKOUT_MS = 15 * 60 * 1000;
 
 class ApiError extends Error {
   constructor(statusCode, message, errors = undefined) {
@@ -37,6 +41,7 @@ export function createApiServer(options = {}) {
 
     try {
       const state = await store.load();
+      const credentialsChanged = ensureRuntimeCredentials(state);
       const service = new SisService(state);
       const url = new URL(req.url, "http://localhost");
       const body = await readJson(req);
@@ -50,9 +55,9 @@ export function createApiServer(options = {}) {
         authenticate(req, service, sessions);
       }
 
-      const result = await route.handler({ req, url, body, service, store, sessions });
+      const result = await route.handler({ req, url, body, service, store, sessions, params: route.params });
 
-      if (result?.persist !== false) {
+      if (result?.persist !== false || credentialsChanged) {
         await store.save(service.state);
       }
 
@@ -63,7 +68,7 @@ export function createApiServer(options = {}) {
         meta: result?.meta || {}
       });
     } catch (error) {
-      const status = error.statusCode || 500;
+      const status = error.statusCode || (error.name === "Error" ? 422 : 500);
       sendJson(res, status, {
         success: false,
         message: status === 500 ? "Unexpected server error." : error.message,
@@ -119,11 +124,16 @@ function isPublic(method, path) {
 function authenticate(req, service, sessions) {
   const header = req.headers.authorization || "";
   const token = header.startsWith("Bearer ") ? header.slice("Bearer ".length) : "";
-  const userId = sessions.get(token);
-  if (!userId) {
+  const session = sessions.get(token);
+  if (!session) {
     throw new ApiError(401, "Authentication required.");
   }
-  service.setCurrentUser(userId);
+  if (session.expiresAt <= Date.now()) {
+    sessions.delete(token);
+    throw new ApiError(401, "Session expired.");
+  }
+  session.expiresAt = Date.now() + SESSION_TTL_MS;
+  service.setCurrentUser(session.userId);
 }
 
 function requireFields(body, fields) {
@@ -182,7 +192,7 @@ const routes = [
     method: "POST",
     regex: /^\/api\/v1\/auth\/login$/,
     handler: async ({ body, service, sessions }) => {
-      requireFields(body, ["username"]);
+      requireFields(body, ["username", "password"]);
       const user = service.state.users.find(
         (item) => item.username === body.username || item.email === body.username
       );
@@ -190,14 +200,35 @@ const routes = [
         service.audit("login_failure", "auth", body.username, null, { username: body.username });
         throw new ApiError(401, "Invalid credentials.");
       }
+      if (user.lockedUntil && new Date(user.lockedUntil).getTime() > Date.now()) {
+        service.audit("login_locked", "auth", user.id, null, { lockedUntil: user.lockedUntil });
+        throw new ApiError(423, "Account is temporarily locked.");
+      }
+      if (!verifyPassword(body.password, user.passwordHash)) {
+        user.failedLoginCount = (user.failedLoginCount || 0) + 1;
+        user.lastFailedLoginAt = new Date().toISOString();
+        if (user.failedLoginCount >= LOCKOUT_AFTER_FAILURES) {
+          user.lockedUntil = new Date(Date.now() + LOCKOUT_MS).toISOString();
+        }
+        service.audit("login_failure", "auth", user.id, null, {
+          username: body.username,
+          failedLoginCount: user.failedLoginCount,
+          lockedUntil: user.lockedUntil || null
+        });
+        throw new ApiError(user.lockedUntil ? 423 : 401, user.lockedUntil ? "Account is temporarily locked." : "Invalid credentials.");
+      }
 
       service.setCurrentUser(user.id);
-      const token = `sis_${Buffer.from(`${user.id}:${Date.now()}:${Math.random()}`).toString("base64url")}`;
-      sessions.set(token, user.id);
+      user.failedLoginCount = 0;
+      user.lockedUntil = null;
+      const token = createSessionToken();
+      const expiresAt = Date.now() + SESSION_TTL_MS;
+      sessions.set(token, { userId: user.id, expiresAt });
       return {
         data: {
           token,
-          user,
+          expiresAt: new Date(expiresAt).toISOString(),
+          user: publicUser(user),
           permissions: service.userPermissions(user)
         }
       };
@@ -456,6 +487,28 @@ const routes = [
       const page = paginate(service.state.auditLogs, url);
       return { data: { auditLogs: page.data }, meta: page.meta };
     }
+  },
+  {
+    method: "POST",
+    regex: /^\/api\/v1\/media-files$/,
+    handler: async ({ body, service }) => {
+      requireFields(body, ["folder", "originalName", "mimeType", "extension", "sizeBytes", "checksum"]);
+      return {
+        statusCode: 201,
+        data: {
+          mediaFile: service.registerMediaFile(body)
+        }
+      };
+    }
+  },
+  {
+    method: "POST",
+    regex: /^\/api\/v1\/notifications\/process$/,
+    handler: async ({ body, service }) => ({
+      data: {
+        notifications: service.processNotifications(body.limit || 25)
+      }
+    })
   },
   {
     method: "POST",

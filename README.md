@@ -31,6 +31,11 @@ npm start
 
 The API listens on `http://localhost:3000` by default and persists state to `data/runtime-state.json` unless `SIS_STATE_PATH` is set. See `docs/RUNTIME_API.md`.
 
+Seeded runtime login:
+
+- Username: `superadmin`
+- Password: `ChangeMe!2026`
+
 ## Production path
 
 The uploaded plan recommends Laravel 11, PHP 8.2+, MySQL 8, Sanctum, queues, scheduler, Form Requests, Policies, Events, and service classes. PHP and Composer are not installed in this cloud machine, so this commit delivers the verifiable static/service/database/API foundation and documents how to convert the same modules into Laravel migrations, controllers, policies, and queues.

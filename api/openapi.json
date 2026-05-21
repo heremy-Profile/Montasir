@@ -58,7 +58,7 @@
     },
     "/auth/login": {
       "post": {
-        "summary": "Authenticate staff, faculty, students, applicants, or guardians",
+        "summary": "Authenticate staff, faculty, students, applicants, or guardians with password verification",
         "security": [],
         "responses": {
           "200": { "description": "Authenticated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StandardSuccess" } } } },
@@ -232,6 +232,15 @@
     },
     "/notifications": {
       "get": { "summary": "List notifications", "responses": { "200": { "description": "Notification list" } } }
+    },
+    "/notifications/process": {
+      "post": { "summary": "Process queued notifications", "responses": { "200": { "description": "Notifications processed" } } }
+    },
+    "/media-files": {
+      "post": {
+        "summary": "Register secure media upload metadata after extension, size, and checksum validation",
+        "responses": { "201": { "description": "Media file registered" } }
+      }
     },
     "/reports/{name}/export": {
       "post": {

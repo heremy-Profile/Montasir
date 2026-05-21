@@ -356,6 +356,7 @@ export function createInitialState() {
     ],
     announcements: [],
     chatConversations: [],
+    mediaFiles: [],
     numberingSequences: {
       applicant: { prefix: "APP", year: 2026, next: 1 },
       student: { prefix: "AKU", year: 2026, next: 1 },
@@ -1023,6 +1024,67 @@ export class SisService {
     this.state.chatConversations.unshift(conversation);
     this.audit("live_chat_requested", "chat", conversation.id, null, conversation);
     return conversation;
+  }
+
+  registerMediaFile(payload) {
+    this.assertPermission("manage_cms");
+    const required = ["folder", "originalName", "mimeType", "extension", "sizeBytes", "checksum"];
+    for (const field of required) {
+      if (!payload[field]) {
+        throw new Error(`Missing media field: ${field}`);
+      }
+    }
+
+    const extension = String(payload.extension).toLowerCase().replace(/^\./, "");
+    const allowedExtensions = this.state.settings.upload.allowedExtensions;
+    const maxBytes = this.state.settings.upload.maxMb * 1024 * 1024;
+    const executableExtensions = ["php", "phtml", "js", "mjs", "sh", "bat", "cmd", "exe", "com"];
+
+    if (!allowedExtensions.includes(extension) || executableExtensions.includes(extension)) {
+      throw new Error("File extension is not allowed.");
+    }
+    if (Number(payload.sizeBytes) <= 0 || Number(payload.sizeBytes) > maxBytes) {
+      throw new Error(`File size must be between 1 byte and ${this.state.settings.upload.maxMb} MB.`);
+    }
+    if (!/^[a-f0-9]{64}$/i.test(payload.checksum)) {
+      throw new Error("Checksum must be a SHA-256 hex digest.");
+    }
+
+    const media = {
+      id: uid("media"),
+      disk: payload.disk || "private",
+      folder: payload.folder,
+      originalName: payload.originalName,
+      storedName: `${uid("file")}.${extension}`,
+      mimeType: payload.mimeType,
+      extension,
+      sizeBytes: Number(payload.sizeBytes),
+      checksum: payload.checksum.toLowerCase(),
+      visibility: payload.visibility || "private",
+      uploadedBy: this.currentUser()?.id || null,
+      createdAt: nowIso()
+    };
+    if (!this.state.mediaFiles) {
+      this.state.mediaFiles = [];
+    }
+    this.state.mediaFiles.unshift(media);
+    this.audit("media_file_registered", "files", media.id, null, media);
+    return media;
+  }
+
+  processNotifications(limit = 25) {
+    this.assertPermission("manage_notifications");
+    const queued = this.state.notifications
+      .filter((notification) => notification.status === "queued")
+      .slice(0, Math.max(1, Math.min(Number(limit) || 25, 100)));
+    for (const notification of queued) {
+      notification.status = "sent";
+      notification.sentAt = nowIso();
+    }
+    this.audit("notifications_processed", "notifications", "batch", null, {
+      count: queued.length
+    });
+    return queued;
   }
 
   buildDashboard() {

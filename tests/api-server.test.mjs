@@ -34,9 +34,15 @@ try {
     assert.equal(response.headers.get("x-content-type-options"), "nosniff");
   }
 
-  const login = await request("POST", "/api/v1/auth/login", { username: "superadmin" });
+  const badLogin = await request("POST", "/api/v1/auth/login", { username: "superadmin", password: "wrong" });
+  assert.equal(badLogin.response.status, 401);
+  assert.equal(badLogin.payload.success, false);
+
+  const login = await request("POST", "/api/v1/auth/login", { username: "superadmin", password: "ChangeMe!2026" });
   assert.equal(login.response.status, 200);
   assert.match(login.payload.data.token, /^sis_/);
+  assert.ok(login.payload.data.expiresAt);
+  assert.equal(login.payload.data.user.passwordHash, undefined);
   const token = login.payload.data.token;
 
   const application = await request("POST", "/api/v1/applications", {
@@ -112,6 +118,33 @@ try {
   assert.equal(audit.response.status, 200);
   assert.equal(audit.payload.meta.per_page, 5);
   assert.ok(audit.payload.data.auditLogs.length >= 1);
+
+  const media = await request("POST", "/api/v1/media-files", {
+    folder: "cms/home",
+    originalName: "hero.png",
+    mimeType: "image/png",
+    extension: "png",
+    sizeBytes: 2048,
+    checksum: "a".repeat(64)
+  }, token);
+  assert.equal(media.response.status, 201);
+  assert.equal(media.payload.data.mediaFile.visibility, "private");
+
+  const blockedMedia = await request("POST", "/api/v1/media-files", {
+    folder: "cms/home",
+    originalName: "shell.php",
+    mimeType: "application/x-php",
+    extension: "php",
+    sizeBytes: 200,
+    checksum: "b".repeat(64)
+  }, token);
+  assert.equal(blockedMedia.response.status, 422);
+  assert.equal(blockedMedia.payload.success, false);
+
+  const notifications = await request("POST", "/api/v1/notifications/process", { limit: 10 }, token);
+  assert.equal(notifications.response.status, 200);
+  assert.ok(notifications.payload.data.notifications.length >= 1);
+  assert.ok(notifications.payload.data.notifications.every((notification) => notification.status === "sent"));
 
   const unauthorized = await request("GET", "/api/v1/students");
   assert.equal(unauthorized.response.status, 401);

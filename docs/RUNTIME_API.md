@@ -29,7 +29,7 @@ Login:
 ```bash
 curl -s http://localhost:3000/api/v1/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"superadmin"}'
+  -d '{"username":"superadmin","password":"ChangeMe!2026"}'
 ```
 
 Use the returned token:
@@ -40,6 +40,19 @@ curl -s http://localhost:3000/api/v1/dashboard \
 ```
 
 This runtime uses demo token sessions suitable for local validation. Production Laravel should use Sanctum or equivalent token/session authentication with password verification, lockout, MFA, and token revocation.
+
+Seeded local credentials:
+
+- `superadmin` / `ChangeMe!2026`
+- `lhassan` / `Faculty!2026`
+
+Runtime security controls:
+
+- PBKDF2-SHA512 password hashing for seeded API users.
+- Failed login audit trail.
+- Temporary lockout after repeated failures.
+- Bearer token sessions with sliding expiry.
+- Password hashes removed from login responses.
 
 ## Implemented endpoints
 
@@ -67,6 +80,8 @@ This runtime uses demo token sessions suitable for local validation. Production 
 - `GET /api/v1/cms/pages`
 - `PATCH /api/v1/cms/pages/{id}`
 - `POST /api/v1/chat/conversations`
+- `POST /api/v1/media-files`
+- `POST /api/v1/notifications/process`
 - `POST /api/v1/reports/{name}/export`
 - `GET /api/v1/audit-logs`
 - `POST /api/v1/admin/reset`
